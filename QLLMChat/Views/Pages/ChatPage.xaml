@@ -1,0 +1,88 @@
+﻿<UserControl x:Class="QLLMChat.Views.Pages.ChatPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QLLMChat.Views.Pages"
+             mc:Ignorable="d" 
+             xmlns:vs="clr-namespace:QLLMChat.ViewModels"
+            xmlns:md="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
+            xmlns:helpers="clr-namespace:QLLMChat.Helpers"
+             FontSize="15"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.Resources>
+            <ControlTemplate x:Key="MessageItemContentStyle_LLModel" TargetType="ContentControl">
+                <Border>
+                    <Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="850"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="1" Background="Transparent" Name="BD_SizeData"/>
+                        </Grid>
+                        <Border HorizontalAlignment="Center"  Padding="5">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+                                <md:MarkdownViewer FocusVisualStyle="{x:Null}" helpers:ControlHelper.MouseWhellRaiseToParent="True"  Markdown="{Binding MessageText}" Width="{Binding ElementName=BD_SizeData,Path=ActualWidth}" HorizontalAlignment="Stretch" Grid.Column="1"/>
+                                <Border Grid.Row="1">
+                                    <WrapPanel>
+                                        <TextBlock Text="已取消生成" Foreground="Red" Name="TEXT_IsCanceledText" Visibility="Collapsed"/>
+                                    </WrapPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <DataTrigger Binding="{Binding State}" Value="Canceled">
+                        <Setter Property="Visibility" TargetName="TEXT_IsCanceledText" Value="Visible"/>
+                    </DataTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+            <ControlTemplate x:Key="MessageItemContentStyle_User" TargetType="ContentControl" >
+                <Border Margin="15,50" CornerRadius="10">
+                    <Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="850"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="1" Name="BD_SizeData">
+                                <Border HorizontalAlignment="Right"  Background="#EEF3FE" Padding="15,10" CornerRadius="5">
+                                    <ContentPresenter Content="{Binding Message}"/>
+                                </Border>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Grid.Resources>
+        <Grid>
+            <ItemsControl FocusVisualStyle="{x:Null}"  ItemsSource="{Binding Messages}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0"  >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="5" Background="Transparent">
+                            <Grid>
+                                <Border HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
+                                    <ContentControl Content="{Binding .}" Name="CONTENT" Template="{DynamicResource MessageItemContentStyle_LLModel}" FocusVisualStyle="{x:Null}"/>
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Sender}" Value="user">
+                                <Setter Property="Template" TargetName="CONTENT" Value="{DynamicResource MessageItemContentStyle_User}"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </Grid>
+</UserControl>
