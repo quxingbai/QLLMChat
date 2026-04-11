@@ -26,8 +26,17 @@ namespace QLLMChat.ViewModels
         private Dictionary<ChatTargetViewModel, ChatPageViewModel> ChatPages = new();
         private bool CanInput = false;
         public ObservableCollection<ChatTargetViewModel> ChatTargets { get; set; } = new();
+        public ObservableCollection<ChatTypeItemModel> ServiceItems { get; set; } = new();
 
-
+        private ChatTypeItemModel _SelectedChatType = null;
+        public ChatTypeItemModel SelectedChatType
+        {
+            get => _SelectedChatType; set
+            {
+                _SelectedChatType = value;
+                OnPropertyChange();
+            }
+        }
 
         private String _Text { get; set; }
         public String Text
@@ -84,6 +93,27 @@ namespace QLLMChat.ViewModels
             this.ChatDataBase = Service.GetRequiredService<IChatDataBase>();
             this.DispatcherProvider = Service.GetRequiredService<IDispatcherProvider>();
             this.ChatTarget = Service.GetRequiredService<IChatModel>();
+
+            if (ChatTarget is IMultiChatTypes multiType)
+            {
+                multiType.GetSupportedTypes().ContinueWith(w =>
+                {
+                    DispatcherProvider.GetDispatcher().BeginInvoke(() =>
+                    {
+                        foreach (var i in w.Result)
+                        {
+                            ServiceItems.Add(i);
+                        }
+                        ServiceItems.Add(ChatTypeItemModel.DefaultItem);
+                        SelectedChatType = ServiceItems.Last();
+                    });
+                });
+            }
+            else
+            {
+                ServiceItems.Add(ChatTypeItemModel.DefaultItem);
+            }
+
             CancellationTokenSource SendTaskCancelSource = null;
             (ChatTargetMessageModel, ChatTargetMessageViewModel)? CanCacnelMessage = null;
 
@@ -96,7 +126,7 @@ namespace QLLMChat.ViewModels
                     SendTaskCancelSource = new();
                     Text = "";
                     var page = ChatPageContent as ChatPageViewModel;
-                    bool isFirstMessage = page.Messages.Count == 0,isChangedAutoTitle=false;
+                    bool isFirstMessage = page.Messages.Count == 0, isChangedAutoTitle = false;
 
                     string text = arg.ToString();
 
@@ -114,6 +144,7 @@ namespace QLLMChat.ViewModels
                     {
                         Messages = context,
                         SendContent = text,
+                        CustomChatType=nowChatTarget.ChatType
                     };
                     if (isFirstMessage)
                     {
@@ -132,7 +163,7 @@ namespace QLLMChat.ViewModels
                                     isChangedAutoTitle = true;
                                     nowChatTarget.Title = "";
                                 }
-                                if(nowChatTarget.Title.ToString().Length < 30)
+                                if (nowChatTarget.Title.ToString().Length < 30)
                                 {
                                     nowChatTarget.Title += (response.Message.Trim());
                                 }
@@ -169,12 +200,12 @@ namespace QLLMChat.ViewModels
             });
             COMMAND_CreateNewChatTarget = new ActionCommand(async arg =>
             {
-                await CreateChatTaargetAsync("新的对话");
+                await CreateChatTaargetAsync("新的对话", SelectedChatType);
             });
             _ = InitAsync();
         }
 
-        private async Task CreateChatTaargetAsync(String Title)
+        private async Task CreateChatTaargetAsync(String Title, ChatTypeItemModel CustomChatType = null)
         {
             var targetId = await this.ChatDataBase.AddChatTargetAsync();
             var target = await this.ChatDataBase.GetChatTargetAsync(targetId);
@@ -190,6 +221,7 @@ namespace QLLMChat.ViewModels
                     Title = Model.ChattName,
                     SubTitle = Model.ChatText,
                     ChatId = Model.ChatId,
+                    ChatType = CustomChatType
                 };
             }
         }
@@ -238,7 +270,7 @@ namespace QLLMChat.ViewModels
                 });
             }
         }
-        private void InputTextChanged(String OldText,String NewText)
+        private void InputTextChanged(String OldText, String NewText)
         {
             if (NewText.Trim() == "")
             {
@@ -248,7 +280,7 @@ namespace QLLMChat.ViewModels
             {
                 CanInput = true;
             }
-             (COMMAND_Send as ActionCommand).OnCanExecuteChanged();
+            (COMMAND_Send as ActionCommand).OnCanExecuteChanged();
         }
     }
 }

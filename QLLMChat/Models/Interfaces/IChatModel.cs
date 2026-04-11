@@ -17,6 +17,5 @@ namespace QLLMChat.Models.Interfaces
         /// 文本对话
         /// </summary>
         public Task<ChatResponseMessageModel> ChatAsync(ChatRequestMessageModel Message, CancellationToken? CancelToken = null);
-        public Task ChatTextAsync(string Msg,Action<string> Response, ChatRequestMessageModel[] Messages=null,CancellationToken? CancelToken = null);
     }
 }

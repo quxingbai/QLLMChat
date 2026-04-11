@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QLLMChat.Models.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,6 +36,14 @@ namespace QLLMChat.ViewModels
                 OnPropertyChange();
             }
         }
-
+        private ChatTypeItemModel _ChatType;
+        public ChatTypeItemModel ChatType
+        {
+            get => _ChatType; set
+            {
+                _ChatType = value;
+                OnPropertyChange();
+            }
+        }
     }
 }

@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              xmlns:vms="clr-namespace:QLLMChat.ViewModels"
              xmlns:cc="clr-namespace:QLLMChat.Views.CControls"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800" Background="WhiteSmoke">
     <Grid>
         <Grid.Resources>
             <Style TargetType="ListBoxItem" x:Key="ChatRargetItemStyle">
@@ -41,7 +41,7 @@
                 <ColumnDefinition Width="215"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border Background="WhiteSmoke">
+            <Border Background="WhiteSmoke" >
                 <Grid >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="100"/>
@@ -50,7 +50,61 @@
                     <Border>
                         <Grid>
                             <Border Margin="15" VerticalAlignment="Center">
-                                <Button Content="创建新对话" HorizontalContentAlignment="Center" Command="{Binding COMMAND_CreateNewChatTarget}" />
+                                <Button Content="创建新对话" HorizontalContentAlignment="Center" Command="{Binding COMMAND_CreateNewChatTarget}">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="DodgerBlue" Padding="10,10" CornerRadius="5">
+                                                <Grid>
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    <Popup Placement="Top" AllowsTransparency="True" IsOpen="{TemplateBinding IsMouseOver}">
+                                                        <Grid Background="Transparent">
+                                                            <Border Background="White" CornerRadius="5" Margin="5">
+                                                                <Border.Effect>
+                                                                    <DropShadowEffect BlurRadius="10" Color="Black" Opacity="0.5"  ShadowDepth="0"/>
+                                                                </Border.Effect>
+                                                            </Border>
+                                                            <Border Margin="5" Background="White" CornerRadius="5" Padding="10">
+                                                                <Grid>
+                                                                    <ListBox ItemsSource="{Binding ServiceItems}" SelectedItem="{Binding SelectedChatType}" Background="Transparent" BorderThickness="0">
+                                                                        <ListBox.ItemContainerStyle>
+                                                                            <Style TargetType="ListBoxItem">
+                                                                                <Setter Property="Template">
+                                                                                    <Setter.Value>
+                                                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                                                            <Border Background="{TemplateBinding Background}" CornerRadius="2" Padding="5,4">
+                                                                                                <Grid>
+                                                                                                    <Grid.ColumnDefinitions>
+                                                                                                        <ColumnDefinition Width="auto"/>
+                                                                                                        <ColumnDefinition Width="*"/>
+                                                                                                    </Grid.ColumnDefinitions>
+                                                                                                    <Border Margin="5,0">
+                                                                                                        <CheckBox HorizontalAlignment="Center" IsChecked="{TemplateBinding IsSelected}" IsEnabled="False"/>
+                                                                                                    </Border>
+                                                                                                    <Border Grid.Column="1">
+                                                                                                        <TextBlock Text="{Binding Title}"/>
+                                                                                                    </Border>
+                                                                                                </Grid>
+                                                                                            </Border>
+                                                                                            <ControlTemplate.Triggers>
+                                                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                                                    <Setter Property="Background" Value="#11000000"/>
+                                                                                                </Trigger>
+                                                                                            </ControlTemplate.Triggers>
+                                                                                        </ControlTemplate>
+                                                                                    </Setter.Value>
+                                                                                </Setter>
+                                                                            </Style>
+                                                                        </ListBox.ItemContainerStyle>
+                                                                    </ListBox>
+                                                                </Grid>
+                                                            </Border>
+                                                        </Grid>
+                                                    </Popup>
+                                                </Grid>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
                             </Border>
                         </Grid>
                     </Border>
@@ -60,15 +114,18 @@
                     </Border>
                 </Grid>
             </Border>
-            <Border Grid.Column="1">
+            <Border Grid.Column="1" Background="White" Margin="15" CornerRadius="5">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
                         <RowDefinition Height="auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <Border Background="Transparent" Padding="10">
+                        <TextBlock Text="{Binding SelectedChatTarget.Title}" Foreground="Black" Opacity="0.2" FontWeight="Bold"/> 
+                    </Border>
                     <!--<ContentControl Content="{Binding ChatPageContent}">-->
-                    <ContentControl Content="{Binding ChatPageContent}">
+                    <ContentControl Grid.Row="1" Content="{Binding ChatPageContent}">
                         <ContentControl.Resources>
                             <DataTemplate DataType="{x:Type vms:ChatPageViewModel}">
                                 <Grid>
@@ -94,7 +151,7 @@
                             </DataTemplate>
                         </ContentControl.Resources>
                     </ContentControl>
-                    
+
                 </Grid>
             </Border>
         </Grid>

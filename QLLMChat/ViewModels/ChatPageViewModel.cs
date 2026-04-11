@@ -33,7 +33,7 @@ namespace QLLMChat.ViewModels
         {
             DateTime nextUpdateDate = DateTime.Now + (TimeSpan.FromSeconds(UpdateSeconds));
             ChatTargetMessageModel model = new() { Sender = "assistant" };
-            ChatTargetMessageViewModel vModel = new() { Sender = "assistant", State = ChatMessageState.Writeing };
+            ChatTargetMessageViewModel vModel = new() { Sender = "assistant", State = ChatMessageState.Writeing,Message="模型思考中..." };
             Messages.Add(vModel);
             StringBuilder sb = new();
             StreamWriteChatTextMessage msg = new(text =>
