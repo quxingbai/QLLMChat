@@ -96,7 +96,8 @@ namespace QLLMChat.Models.ChatEntities
             return data.Models.Select(s => new ChatTypeItemModel()
             {
                 Data = s,
-                Title = s.Name
+                Title = s.Name,
+                Text=($"模型：{s.Model} | 大小：{s.Size}")
             });
         }
     }

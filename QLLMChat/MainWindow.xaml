@@ -8,6 +8,8 @@
         mc:Ignorable="d"
         xmlns:cc="clr-namespace:QLLMChat.Views.CControls"
         Title="MainWindow" Height="930" Width="1600">
+    <Window.Resources>
+    </Window.Resources>
     <Grid>
         <pages:MainChatPage DataContext="{Binding MainChatPageViewModel}"/>
     </Grid>

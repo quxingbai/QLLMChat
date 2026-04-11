@@ -183,7 +183,11 @@ namespace QLLMChat.ViewModels
                     {
                         CanCacnelMessage.Value.Item2.State = ChatTargetMessageViewModel.ChatMessageState.Canceled;
                     }
-                    else throw error;
+                    else
+                    {
+                        CanCacnelMessage.Value.Item2.State = ChatTargetMessageViewModel.ChatMessageState.Canceled;
+                    }
+                    //else throw error;
                 }
                 IsSending = false;
                 (COMMAND_Send as ActionCommand).OnCanExecuteChanged();
@@ -219,7 +223,7 @@ namespace QLLMChat.ViewModels
                 return new ChatTargetViewModel()
                 {
                     Title = Model.ChattName,
-                    SubTitle = Model.ChatText,
+                    SubTitle = SelectedChatType.Text,
                     ChatId = Model.ChatId,
                     ChatType = CustomChatType
                 };

@@ -14,6 +14,14 @@
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="BorderThickness" Value="0"/>
                 <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="ContextMenu">
+                    <Setter.Value>
+                        <ContextMenu>
+                            <MenuItem Header="设置"/>
+                        </ContextMenu>
+                    </Setter.Value>
+                </Setter> 
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListBoxItem">
@@ -122,10 +130,14 @@
                     </Grid.RowDefinitions>
 
                     <Border Background="Transparent" Padding="10">
-                        <TextBlock Text="{Binding SelectedChatTarget.Title}" Foreground="Black" Opacity="0.2" FontWeight="Bold"/> 
+                        <TextBlock  Foreground="Black" Opacity="0.2" FontWeight="Bold">
+                            <Run Text="{Binding SelectedChatTarget.Title,Mode=OneWay}"/>
+                            <Run Text="  "/>
+                            <Run Text="{Binding SelectedChatTarget.ChatType.Text,Mode=OneWay}"/>
+                        </TextBlock>
                     </Border>
                     <!--<ContentControl Content="{Binding ChatPageContent}">-->
-                    <ContentControl Grid.Row="1" Content="{Binding ChatPageContent}">
+                    <ContentControl FocusVisualStyle="{x:Null}" Grid.Row="1" Content="{Binding ChatPageContent}">
                         <ContentControl.Resources>
                             <DataTemplate DataType="{x:Type vms:ChatPageViewModel}">
                                 <Grid>
@@ -139,7 +151,7 @@
                                             <Border Grid.Row="1" />
                                         </Grid>
                                     </ScrollViewer>
-                                    <Border Grid.Row="1"  VerticalAlignment="Bottom" Background="White" HorizontalAlignment="Center" DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:MainChatPage},Path=DataContext}">
+                                    <Border Grid.Row="1"  VerticalAlignment="Bottom" Background="White" Padding="30,0" HorizontalAlignment="Center" DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:MainChatPage},Path=DataContext}">
                                         <Grid>
                                             <cc:InputBox Text="{Binding Text,Mode=TwoWay}" IsSending="{Binding IsSending}" Width="850" MinHeight="130" Margin="0,0,0,40" SendCommand="{Binding COMMAND_Send}" CancelCommand="{Binding COMMAND_Cancel}"/>
                                         </Grid>

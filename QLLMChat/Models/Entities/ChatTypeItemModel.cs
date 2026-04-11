@@ -14,6 +14,7 @@ namespace QLLMChat.Models.Entities
             Data = "。。。。."
         };
         public String Title { get; set; }
+        public String Text { get; set; }
         public object Data { get; set; }
         public override bool Equals(object? obj)
         {
