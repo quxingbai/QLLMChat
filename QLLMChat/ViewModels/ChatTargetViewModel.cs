@@ -9,8 +9,8 @@ namespace QLLMChat.ViewModels
 {
     public class ChatTargetViewModel:ViewModelBase
     {
-        private object _Title;
-        public object Title
+        private string _Title;
+        public string Title
         {
             get => _Title; set
             {

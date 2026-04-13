@@ -11,6 +11,23 @@
     <Window.Resources>
     </Window.Resources>
     <Grid>
+        <ContentControl>
+            <ContentControl.Template>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border Background="Black">
+                        
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsIniting}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsIniting}" Value="False">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </ContentControl.Template>
+        </ContentControl>
         <pages:MainChatPage DataContext="{Binding MainChatPageViewModel}"/>
     </Grid>
 </Window>

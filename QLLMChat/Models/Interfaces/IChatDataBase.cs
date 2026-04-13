@@ -10,13 +10,13 @@ namespace QLLMChat.Models.Interfaces
     public interface IChatDataBase
     {
         public Task<IEnumerable<ChatTargetModel>> GetChatTargetsAsync();
-        public Task<ChatTargetModel?> GetChatTargetAsync(int ChatID);        
+        public Task<ChatTargetModel?> GetChatTargetAsync(int ChatID);
         public Task<IEnumerable<ChatTargetMessageModel>> GetChatTargetMessagesAsync(int ChatID);
+        public Task<ChatTargetModel?> UpdateChatTargetAsync(int ChatID, ChatTargetModel Target);
 
-        public Task<int> AddChatTargetAsync(String? Title=null);
+        public Task<ChatTargetModel> AddChatTargetAsync(ChatTargetModel Target);
         public Task<int> RemoveChatTargetAsync(int ChatID);
-        public Task<int> AddChatMessageAsync(int ChatID,ChatTargetMessageModel Message);
-        public Task<int> RemoveChatMessageAsync(int ChatID,int MessageID);
-
+        public Task<int> AddChatMessageAsync(int ChatID, ChatTargetMessageModel Message);
+        public Task<int> RemoveChatMessageAsync(int ChatID, int MessageID);
     }
 }

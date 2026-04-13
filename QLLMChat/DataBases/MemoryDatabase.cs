@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace QLLMChat.DataBases
 {
-    internal class MemoryDatabase : IChatDataBase
+    public class MemoryDatabase : IChatDataBase
     {
-        private Dictionary<int, ChatTargetModel> ChatTargeets = new();
-        private Dictionary<int, List<ChatTargetMessageModel>> ChatTargetMessages = new();
+        protected Dictionary<int, ChatTargetModel> ChatTargeets = new();
+        protected Dictionary<int, List<ChatTargetMessageModel>> ChatTargetMessages = new();
 
-        private int NextChatTargetID = 1;
+        protected int NextChatTargetID = 1;
         private object _lock = new object();
         private int GetNextChatTargetID()
         {
@@ -25,32 +25,32 @@ namespace QLLMChat.DataBases
             }
             return id;
         }
-        public async Task<int> AddChatTargetAsync(String? Title = null)
+        public virtual async Task<ChatTargetModel> AddChatTargetAsync(ChatTargetModel Target)
         {
-            var id = GetNextChatTargetID();
             return await Task.Run(() =>
             {
-                ChatTargeets.Add(id, new() { ChatId = id, ChatText = "...", ChattName = Title ?? "新建对话" });
-                return id;
-            });
+                Target.ChatId= GetNextChatTargetID();
+                ChatTargeets.Add(Target.ChatId, Target);
+                return Target;
+            }).ConfigureAwait(false);
         }
 
-        public async Task<ChatTargetModel?> GetChatTargetAsync(int ChatID)
+        public virtual async Task<ChatTargetModel?> GetChatTargetAsync(int ChatID)
         {
-            return await Task.Run(() => ChatTargeets.ContainsKey(ChatID) ? ChatTargeets[ChatID] : null);
+            return await Task.Run(() => ChatTargeets.ContainsKey(ChatID) ? ChatTargeets[ChatID] : null).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<ChatTargetMessageModel>> GetChatTargetMessagesAsync(int ChatID)
+        public virtual async Task<IEnumerable<ChatTargetMessageModel>> GetChatTargetMessagesAsync(int ChatID)
         {
-            return await Task.Run(() => (IEnumerable<ChatTargetMessageModel>)(ChatTargetMessages.ContainsKey(ChatID) ? ChatTargetMessages[ChatID] : new()));
+            return await Task.Run(() => (IEnumerable<ChatTargetMessageModel>)(ChatTargetMessages.ContainsKey(ChatID) ? ChatTargetMessages[ChatID] : new())).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<ChatTargetModel>> GetChatTargetsAsync()
+        public virtual async Task<IEnumerable<ChatTargetModel>> GetChatTargetsAsync()
         {
-            return await Task.Run(() => (IEnumerable<ChatTargetModel>)ChatTargeets.Values);
+            return await Task.Run(() => (IEnumerable<ChatTargetModel>)ChatTargeets.Values).ConfigureAwait(false);
         }
 
-        public async Task<int> RemoveChatTargetAsync(int ChatID)
+        public virtual async Task<int> RemoveChatTargetAsync(int ChatID)
         {
             return await Task.Run(() =>
             {
@@ -60,10 +60,10 @@ namespace QLLMChat.DataBases
                     return 1;
                 }
                 return -1;
-            });
+            }).ConfigureAwait(false);
         }
 
-        public async Task<int> AddChatMessageAsync(int ChatID,ChatTargetMessageModel Message)
+        public virtual async Task<int> AddChatMessageAsync(int ChatID, ChatTargetMessageModel Message)
         {
             return await Task.Run(() =>
             {
@@ -72,14 +72,15 @@ namespace QLLMChat.DataBases
                     if (!ChatTargetMessages.ContainsKey(ChatID))
                     {
                         ChatTargetMessages.Add(ChatID, new());
+
                     }
                     ChatTargetMessages[ChatID].Add(Message);
                 }
                 return 1;
-            });
+            }).ConfigureAwait(false);
         }
 
-        public async Task<int> RemoveChatMessageAsync(int ChatID,int MessageID)
+        public virtual async Task<int> RemoveChatMessageAsync(int ChatID, int MessageID)
         {
             return await Task.Run(() =>
             {
@@ -94,7 +95,25 @@ namespace QLLMChat.DataBases
                 {
                     return 0;
                 }
-            });
+            }).ConfigureAwait(false);
         }
+
+        public virtual async Task<ChatTargetModel?> UpdateChatTargetAsync(int ChatID, ChatTargetModel Target)
+        {
+            return await Task.Run(() =>
+            {
+                if (ChatTargeets.ContainsKey(ChatID))
+                {
+                    ChatTargeets[ChatID] = Target;
+                    return Target;
+                }
+                else
+                {
+                    return null;
+                }
+            }).ConfigureAwait(false);
+
+        }
+
     }
 }

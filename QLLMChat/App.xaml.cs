@@ -23,7 +23,10 @@ namespace QLLMChat
         {
             var service = new ServiceCollection();
 
-            service.AddSingleton<IChatDataBase, MemoryDatabase>();
+            service.AddSingleton<IChatDataBase, JsonDatabase>(p =>
+            {
+                return new JsonDatabase("./chatdata.json");
+            });
             service.AddSingleton<IChatModel, OllamaChat>();
             service.AddSingleton<IDispatcherProvider, AppDispatcher>();
             service.AddTransient<MainWindowViewModel>();

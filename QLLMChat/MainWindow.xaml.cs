@@ -24,6 +24,7 @@ namespace QLLMChat
         {
             InitializeComponent();
             this.DataContext = ViewModel;
+            Task.Delay(1000).Wait();
         }
     }
 }

@@ -73,7 +73,7 @@
                         </Grid>
                     </Border>
                     <Border Grid.Row="1" >
-                        <ListBox FocusVisualStyle="{x:Null}"  SelectedItem="{Binding SelectedChatTarget}" ItemContainerStyle="{DynamicResource ChatRargetItemStyle}" ItemsSource="{Binding ChatTargets}" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox FocusVisualStyle="{x:Null}"  SelectedItem="{Binding SelectedChatTarget}" ItemContainerStyle="{DynamicResource ChatRargetItemStyle}" ItemsSource="{Binding ChatTargets}" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Hidden">
                         </ListBox>
                     </Border>
                 </Grid>

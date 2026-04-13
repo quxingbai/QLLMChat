@@ -78,11 +78,6 @@ namespace QLLMChat.Models.ChatEntities
         }
         private void CreateMessages(ChatRequestMessageModel Message, out List<OlllamaChatRoleMessage> CreatedMessage, out string ModelName)
         {
-            OllamaResponses.OllamaServiceTagsResponseModel.TagModelInfo CustomModel = null;
-            if (Message?.CustomChatType?.Data is OllamaResponses.OllamaServiceTagsResponseModel.TagModelInfo modelInfo)
-            {
-                CustomModel = modelInfo;
-            }
             var msg = Message.Messages.Select(s => new OlllamaChatRoleMessage()
             {
                 Content = s.Message,
@@ -94,7 +89,7 @@ namespace QLLMChat.Models.ChatEntities
                 Role = GetUserMessageName(),
             });
             CreatedMessage = msg;
-            ModelName = CustomModel?.Model ?? this.ModelName;
+            ModelName = Message.CustomChatType?.Model ?? this.ModelName;
         }
 
 
@@ -104,7 +99,9 @@ namespace QLLMChat.Models.ChatEntities
 
             return data.Models.Select(s => new ChatTypeItemModel()
             {
-                Data = s,
+                Size=s.Size,
+                Model=s.Model,
+                Name=s.Name,
                 Title = s.Name,
                 Text = ($"模型：{s.Model} | 大小：{s.Size}")
             });

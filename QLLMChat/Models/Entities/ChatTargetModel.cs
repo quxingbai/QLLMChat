@@ -9,8 +9,7 @@ namespace QLLMChat.Models.Entities
     public class ChatTargetModel
     {
         public String ChattName { get; set; }
-        public String ChatText { get; set; }
         public int ChatId { get; set; }
-        public String ChatTargetType { get; set; } = "LLModel";
+        public ChatTypeItemModel ChatTargetType { get; set; } 
     }
 }
