@@ -8,5 +8,6 @@ namespace QLLMChat.Models.Entities
 {
     public class ChatResponseMessageModel
     {
+        public String Message { get; set; }
     }
 }

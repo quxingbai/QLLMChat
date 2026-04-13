@@ -5,8 +5,36 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:QLLMChat.Views.Pages"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+            xmlns:cc="clr-namespace:QLLMChat.Views.CControls"
+             d:DesignHeight="450" d:DesignWidth="800"
+             xmlns:md="clr-namespace:QLLMChat.Models.Entities"
+    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
     <Grid>
-            
+        <Border Width="750" Height="180">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border Background="Transparent" CornerRadius="5" Margin="5">
+                    <Border Grid.Column="1">
+                        <ComboBox ToolTip="选择模型" HorizontalAlignment="Right" ItemsSource="{Binding ChatTypes}" SelectedItem="{Binding SelectedChatTypeItem}" FontSize="10">
+                            <ComboBox.Resources>
+                                <DataTemplate DataType="{x:Type md:ChatTypeItemModel}">
+                                    <Border>
+                                        <Grid>
+                                            <TextBlock Text="{Binding Title}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ComboBox.Resources>
+                        </ComboBox>
+                    </Border>
+                </Border>
+                <Border Grid.Row="1">
+                    <cc:InputBox SendCommand="{Binding SendCommand}" Text="{Binding Text}"/>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

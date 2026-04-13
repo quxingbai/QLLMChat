@@ -7,7 +7,7 @@
         xmlns:pages="clr-namespace:QLLMChat.Views.Pages"
         mc:Ignorable="d"
         xmlns:cc="clr-namespace:QLLMChat.Views.CControls"
-        Title="MainWindow" Height="930" Width="1600">
+        Title="本地推理模型对话" Height="930" Width="1600">
     <Window.Resources>
     </Window.Resources>
     <Grid>

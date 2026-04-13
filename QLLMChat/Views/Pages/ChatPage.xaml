@@ -66,7 +66,12 @@
             </ControlTemplate>
         </Grid.Resources>
         <Grid>
-            <ItemsControl FocusVisualStyle="{x:Null}"  ItemsSource="{Binding Messages}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0"  >
+            <ItemsControl FocusVisualStyle="{x:Null}" VirtualizingPanel.IsVirtualizing="True" ItemsSource="{Binding Messages}" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderThickness="0"  >
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Padding="5" Background="Transparent">

@@ -23,10 +23,12 @@ namespace QLLMChat.ViewModels
         private IChatDataBase ChatDataBase = null;
         private IDispatcherProvider DispatcherProvider = null;
         private IChatModel ChatTarget = null;
+        private IServiceProvider ServiceProvider = null;
         private Dictionary<ChatTargetViewModel, ChatPageViewModel> ChatPages = new();
-        private bool CanInput = false;
+        private bool CanInput = true;
         public ObservableCollection<ChatTargetViewModel> ChatTargets { get; set; } = new();
-        public ObservableCollection<ChatTypeItemModel> ServiceItems { get; set; } = new();
+        //public ObservableCollection<ChatTypeItemModel> ServiceItems { get; set; } = new();
+        public Lazy<IEnumerable<ChatTypeItemModel>> ChatTypeItems { get; set; }
 
         private ChatTypeItemModel _SelectedChatType = null;
         public ChatTypeItemModel SelectedChatType
@@ -87,32 +89,34 @@ namespace QLLMChat.ViewModels
         public ICommand COMMAND_Cancel { get; set; }
         public ICommand COMMAND_CreateNewChatTarget { get; set; }
 
+        public ICommand COMMAND_FirstChatSendCommand { get; set; }
 
         public MainChatPageViewModel(IServiceProvider Service)
         {
             this.ChatDataBase = Service.GetRequiredService<IChatDataBase>();
             this.DispatcherProvider = Service.GetRequiredService<IDispatcherProvider>();
             this.ChatTarget = Service.GetRequiredService<IChatModel>();
+            this.ServiceProvider = Service;
 
-            if (ChatTarget is IMultiChatTypes multiType)
-            {
-                multiType.GetSupportedTypes().ContinueWith(w =>
-                {
-                    DispatcherProvider.GetDispatcher().BeginInvoke(() =>
-                    {
-                        foreach (var i in w.Result)
-                        {
-                            ServiceItems.Add(i);
-                        }
-                        ServiceItems.Add(ChatTypeItemModel.DefaultItem);
-                        SelectedChatType = ServiceItems.Last();
-                    });
-                });
-            }
-            else
-            {
-                ServiceItems.Add(ChatTypeItemModel.DefaultItem);
-            }
+            //if (ChatTarget is IMultiChatTypes multiType)
+            //{
+            //    multiType.GetSupportedTypes().ContinueWith(w =>
+            //    {
+            //        DispatcherProvider.GetDispatcher().BeginInvoke(() =>
+            //        {
+            //            foreach (var i in w.Result)
+            //            {
+            //                ServiceItems.Add(i);
+            //            }
+            //            ServiceItems.Add(ChatTypeItemModel.DefaultItem);
+            //            SelectedChatType = ServiceItems.Last();
+            //        });
+            //    });
+            //}
+            //else
+            //{
+            //    ServiceItems.Add(ChatTypeItemModel.DefaultItem);
+            //}
 
             CancellationTokenSource SendTaskCancelSource = null;
             (ChatTargetMessageModel, ChatTargetMessageViewModel)? CanCacnelMessage = null;
@@ -144,7 +148,7 @@ namespace QLLMChat.ViewModels
                     {
                         Messages = context,
                         SendContent = text,
-                        CustomChatType=nowChatTarget.ChatType
+                        CustomChatType = nowChatTarget.ChatType
                     };
                     if (isFirstMessage)
                     {
@@ -172,8 +176,15 @@ namespace QLLMChat.ViewModels
                     }, SendTaskCancelSource.Token);
 
                     var response = vmMessage.Complet();
+
                     await ChatDataBase.AddChatMessageAsync(nowChatTarget.ChatId, selfMessage);
                     await ChatDataBase.AddChatMessageAsync(nowChatTarget.ChatId, response.Item1);
+
+                    //for (int i = 0; i < 100; i++)
+                    //{
+                    //    page.AddMessage(selfMessage);
+                    //    page.AddMessage(response.Item1);
+                    //}
                 }
                 catch (Exception error)
                 {
@@ -206,8 +217,16 @@ namespace QLLMChat.ViewModels
             {
                 await CreateChatTaargetAsync("新的对话", SelectedChatType);
             });
+            COMMAND_FirstChatSendCommand = new ActionCommand(async arg => {
+                SelectedChatTargetChanged(this.SelectedChatTarget);
+                if (COMMAND_Send.CanExecute(arg))
+                {
+                    COMMAND_Send.Execute(arg);
+                }
+            } );
             _ = InitAsync();
         }
+
 
         private async Task CreateChatTaargetAsync(String Title, ChatTypeItemModel CustomChatType = null)
         {
@@ -223,7 +242,7 @@ namespace QLLMChat.ViewModels
                 return new ChatTargetViewModel()
                 {
                     Title = Model.ChattName,
-                    SubTitle = SelectedChatType.Text,
+                    SubTitle = SelectedChatType?.Text,
                     ChatId = Model.ChatId,
                     ChatType = CustomChatType
                 };
@@ -251,16 +270,25 @@ namespace QLLMChat.ViewModels
             {
                 Page = ChatPages[ChatTarget];
             }
-            else
+            needInit = Page == null ? false : Page.Messages.Count == 0;
+            ChatPageContent = Page == null ? new FirstChatPageViewModel(this.ServiceProvider, create =>
             {
-                Page = new ChatPageViewModel();
-                needInit = true;
-            }
-            ChatPageContent = Page;
+                ChatTarget.ChatType = create.SelectedChatTypeItem;
+                ChatPageViewModel chatPageVm = new();
+                ChatPages.Add(ChatTarget, chatPageVm);
+                SelectedChatTargetChanged(ChatTarget);
 
-            if (needInit)
+                string text = create.Text;
+                this.Text = text;
+                if (COMMAND_Send.CanExecute(text))
+                {
+                    COMMAND_Send.Execute(text);
+                }
+            }) : Page;
+
+
+            if (Page != null&&needInit)
             {
-                ChatPages.Add(ChatTarget, Page);
                 ChatDataBase.GetChatTargetMessagesAsync(ChatTarget.ChatId).ContinueWith(w =>
                 {
                     if (ChatPageContent == Page)
@@ -273,6 +301,7 @@ namespace QLLMChat.ViewModels
                         });
                 });
             }
+
         }
         private void InputTextChanged(String OldText, String NewText)
         {

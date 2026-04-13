@@ -29,11 +29,11 @@ namespace QLLMChat.ViewModels
             Sender = message.Sender,
             State = ChatMessageState.Sended
         });
-        public StreamWriteChatTextMessage CreateStringStreamMessage(double UpdateSeconds = 1)
+        public StreamWriteChatTextMessage CreateStringStreamMessage(double UpdateSeconds = 1,String DefaultMessage= "模型思考中...")
         {
             DateTime nextUpdateDate = DateTime.Now + (TimeSpan.FromSeconds(UpdateSeconds));
             ChatTargetMessageModel model = new() { Sender = "assistant" };
-            ChatTargetMessageViewModel vModel = new() { Sender = "assistant", State = ChatMessageState.Writeing,Message="模型思考中..." };
+            ChatTargetMessageViewModel vModel = new() { Sender = "assistant", State = ChatMessageState.Writeing,Message=DefaultMessage };
             Messages.Add(vModel);
             StringBuilder sb = new();
             StreamWriteChatTextMessage msg = new(text =>

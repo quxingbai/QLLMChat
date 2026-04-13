@@ -94,12 +94,24 @@ namespace QLLMChat.Views.CControls
 
         private void TEXT_INPUT_KeyDown(object sender, KeyEventArgs e)
         {
-            if ((!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.Enter)
+            bool isDownShift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
+            if (e.Key == Key.Enter)
             {
-                if (SendCommand.CanExecute(Text))
-                    SendCommand.Execute(Text);
-                e.Handled = true;
+                if (isDownShift)
+                {
+                    this.Text+= Environment.NewLine;
+                }
+                else
+                {
+                    if (SendCommand.CanExecute(Text)) SendCommand.Execute(Text);
+                }
             }
+            //if ((!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.Enter)
+            //{
+            //    if (SendCommand.CanExecute(Text))
+            //        SendCommand.Execute(Text);
+            //    e.Handled = true;
+            //}
         }
     }
 }

@@ -14,7 +14,7 @@ using static MultimodalSharp.Ollama.Models.Entities.OllamaRequests;
 
 namespace QLLMChat.Models.ChatEntities
 {
-    public class OllamaChat : ChatBase, IMultiChatTypes
+    public class OllamaChat : IChatModel, IMultiChatTypes
     {
         public static readonly HttpClient OllamaHttpClient = new();
         private OllamaChatClient OllamaClient = null;
@@ -45,27 +45,13 @@ namespace QLLMChat.Models.ChatEntities
                 ServerIP = IP,
             });
         }
-        public override async Task ChatAsync(ChatRequestMessageModel Message, Action<ChatResponseStreamMessageModel> Response, CancellationToken? CancelToken = null)
+        public async Task ChatAsync(ChatRequestMessageModel Message, Action<ChatResponseStreamMessageModel> Response, CancellationToken? CancelToken = null)
         {
-            OllamaResponses.OllamaServiceTagsResponseModel.TagModelInfo CustomModel = null;
-            if (Message.CustomChatType.Data is OllamaResponses.OllamaServiceTagsResponseModel.TagModelInfo modelInfo)
-            {
-                CustomModel = modelInfo;
-            }
-            var msg = Message.Messages.Select(s => new OlllamaChatRoleMessage()
-            {
-                Content = s.Message,
-                Role = s.Sender,
-            }).ToList();
-            msg.Add(new OlllamaChatRoleMessage()
-            {
-                Content = Message.SendContent,
-                Role = "user",
-            });
+            CreateMessages(Message, out var msg, out var ModelName);
             await OllamaClient.RequestMessageAsync(new OllamaChatRequestModel()
             {
                 Messages = msg,
-                Model = CustomModel?.Model ?? ModelName,
+                Model = ModelName,
                 Stream = true,
             }, (msg) =>
             {
@@ -77,15 +63,38 @@ namespace QLLMChat.Models.ChatEntities
 
         }
 
-        public override Task<ChatResponseMessageModel> ChatAsync(ChatRequestMessageModel Message, CancellationToken? CancelToken = null)
+        public async Task<ChatResponseMessageModel> ChatAsync(ChatRequestMessageModel Message, CancellationToken? CancelToken = null)
         {
-
-            throw new();
+            CreateMessages(Message, out var msg, out var ModelName);
+            var data = await OllamaClient.RequestMessageAsync(new OllamaChatRequestModel()
+            {
+                Messages = msg,
+                Model = ModelName
+            });
+            return new()
+            {
+                Message = data.Message.Content
+            };
         }
-
-        public override void Dispose()
+        private void CreateMessages(ChatRequestMessageModel Message, out List<OlllamaChatRoleMessage> CreatedMessage, out string ModelName)
         {
-            throw new NotImplementedException();
+            OllamaResponses.OllamaServiceTagsResponseModel.TagModelInfo CustomModel = null;
+            if (Message?.CustomChatType?.Data is OllamaResponses.OllamaServiceTagsResponseModel.TagModelInfo modelInfo)
+            {
+                CustomModel = modelInfo;
+            }
+            var msg = Message.Messages.Select(s => new OlllamaChatRoleMessage()
+            {
+                Content = s.Message,
+                Role = s.Sender,
+            }).ToList();
+            msg.Add(new OlllamaChatRoleMessage()
+            {
+                Content = Message.SendContent,
+                Role = GetUserMessageName(),
+            });
+            CreatedMessage = msg;
+            ModelName = CustomModel?.Model ?? this.ModelName;
         }
 
 
@@ -97,8 +106,13 @@ namespace QLLMChat.Models.ChatEntities
             {
                 Data = s,
                 Title = s.Name,
-                Text=($"模型：{s.Model} | 大小：{s.Size}")
+                Text = ($"模型：{s.Model} | 大小：{s.Size}")
             });
+        }
+
+        public string GetUserMessageName()
+        {
+            return "user";
         }
     }
 }

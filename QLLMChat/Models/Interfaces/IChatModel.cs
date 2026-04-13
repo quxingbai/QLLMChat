@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace QLLMChat.Models.Interfaces
 {
-    public interface IChatModel:IDisposable
+    public interface IChatModel
     {
         /// <summary>
         /// 流对话
@@ -17,5 +17,6 @@ namespace QLLMChat.Models.Interfaces
         /// 文本对话
         /// </summary>
         public Task<ChatResponseMessageModel> ChatAsync(ChatRequestMessageModel Message, CancellationToken? CancelToken = null);
+        public String GetUserMessageName();
     }
 }
