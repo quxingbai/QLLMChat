@@ -9,6 +9,7 @@
             xmlns:md="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
             xmlns:helpers="clr-namespace:QLLMChat.Helpers"
              FontSize="15"
+             xmlns:cc="clr-namespace:QLLMChat.Views.CControls"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.Resources>
@@ -29,7 +30,8 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="auto"/>
                                 </Grid.RowDefinitions>
-                                <md:MarkdownViewer FocusVisualStyle="{x:Null}" helpers:ControlHelper.MouseWhellRaiseToParent="True"  Markdown="{Binding MessageText}" Width="{Binding ElementName=BD_SizeData,Path=ActualWidth}" HorizontalAlignment="Stretch" Grid.Column="1"/>
+                                <!--<md:MarkdownViewer FocusVisualStyle="{x:Null}" helpers:ControlHelper.MouseWhellRaiseToParent="True"  Markdown="{Binding MessageText}" Width="{Binding ElementName=BD_SizeData,Path=ActualWidth}" HorizontalAlignment="Stretch" Grid.Column="1"/>-->
+                                <cc:CustomRenderMarkdownViewer FocusVisualStyle="{x:Null}" helpers:ControlHelper.MouseWhellRaiseToParent="True"  Markdown="{Binding MessageText}" Width="{Binding ElementName=BD_SizeData,Path=ActualWidth}" HorizontalAlignment="Stretch" Grid.Column="1"/>
                                 <Border Grid.Row="1">
                                     <WrapPanel>
                                         <TextBlock Text="已取消生成" Foreground="Red" Name="TEXT_IsCanceledText" Visibility="Collapsed"/>

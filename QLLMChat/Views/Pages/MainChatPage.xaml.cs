@@ -22,6 +22,7 @@ namespace QLLMChat.Views.Pages
     public partial class MainChatPage : UserControl
     {
         private bool IsLastScrollToBottom = true;
+        private ScrollViewer MessageScroll = null;
         public MainChatPage()
         {
             InitializeComponent();
@@ -52,7 +53,15 @@ namespace QLLMChat.Views.Pages
 
         private void SCROLL_ChatPage_Loaded(object sender, RoutedEventArgs e)
         {
+            MessageScroll = sender as ScrollViewer;
+        }
 
+        private void InputBox_SendEnd(CControls.InputBox obj)
+        {
+            if (MessageScroll != null)
+            {
+                MessageScroll.ScrollToBottom();
+            }
         }
     }
 }

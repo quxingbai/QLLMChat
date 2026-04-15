@@ -75,7 +75,8 @@ namespace QLLMChat.Views.CControls
             DependencyProperty.Register(nameof(CancelCommand), typeof(ICommand), typeof(InputBox), new PropertyMetadata(null));
 
 
-
+        public event Func<InputBox,bool> SendStart;
+        public event Action<InputBox> SendEnd;
         static InputBox()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(InputBox), new FrameworkPropertyMetadata(typeof(InputBox)));
@@ -99,11 +100,17 @@ namespace QLLMChat.Views.CControls
             {
                 if (isDownShift)
                 {
-                    this.Text+= Environment.NewLine;
+                    (sender as TextBox).CaretIndex = this.Text.Length;
                 }
                 else
                 {
-                    if (SendCommand.CanExecute(Text)) SendCommand.Execute(Text);
+                    if (SendStart?.Invoke(this) ?? false) return;
+                    if (SendCommand.CanExecute(Text))
+                    {
+                        SendCommand.Execute(Text);
+                        e.Handled = true;
+                    }
+                    SendEnd?.Invoke(this);  
                 }
             }
             //if ((!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)) && e.Key == Key.Enter)

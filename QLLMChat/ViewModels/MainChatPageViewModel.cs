@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace QLLMChat.ViewModels
 {
@@ -121,7 +122,7 @@ namespace QLLMChat.ViewModels
                     };
                     page.AddMessage(selfMessage);
 
-                    var context = await ChatDataBase.GetChatTargetMessagesAsync(nowChatTarget.ChatId);
+                    var context = await ChatDataBase.GetChatTargetMessagesAsync(nowChatTarget.ChatId).ConfigureAwait(true);
                     var vmMessage = page.CreateStringStreamMessage(0);
                     CanCacnelMessage = (vmMessage.Model, vmMessage.ViewModel);
                     var msg = new ChatRequestMessageModel()
@@ -136,35 +137,38 @@ namespace QLLMChat.ViewModels
                     }
                     await this.ChatTarget.ChatAsync(msg, response =>
                     {
-                        if (response.Message != "")
+                        DispatcherProvider.GetDispatcher().Invoke(() =>
                         {
-                            vmMessage.Write(response.Message);
-                            //如果是第一条消息，设置标题为前几个字符
-                            if (isFirstMessage)
+                            if (response.Message != "")
                             {
-                                if (!isChangedAutoTitle)
+                                vmMessage.Write(response.Message);
+                                //如果是第一条消息，设置标题为前几个字符
+                                if (isFirstMessage)
                                 {
-                                    isChangedAutoTitle = true;
-                                    nowChatTarget.Title = "";
-                                }
-                                if (nowChatTarget.Title.ToString().Length < 30)
-                                {
-                                    nowChatTarget.Title += (response.Message.Trim());
-                                }
-                                else
-                                {
-                                    isFirstMessage = false;
+                                    if (!isChangedAutoTitle)
+                                    {
+                                        isChangedAutoTitle = true;
+                                        nowChatTarget.Title = "";
+                                    }
+                                    if (nowChatTarget.Title.ToString().Length < 30)
+                                    {
+                                        nowChatTarget.Title += (response.Message.Trim());
+                                    }
+                                    else
+                                    {
+                                        isFirstMessage = false;
+                                    }
                                 }
                             }
-                        }
+                        });
                     }, SendTaskCancelSource.Token);
 
-                   _= ChatDataBase.UpdateChatTargetAsync(nowChatTarget.ChatId, new ChatTargetModel()
+                   _= await ChatDataBase.UpdateChatTargetAsync(nowChatTarget.ChatId, new ChatTargetModel()
                     {
                         ChatId = nowChatTarget.ChatId,
                         ChatTargetType = nowChatTarget.ChatType,
                         ChattName = nowChatTarget.Title
-                    }).ConfigureAwait(false);
+                    }).ConfigureAwait(true);
 
                     var response = vmMessage.Complet();
 
@@ -192,7 +196,10 @@ namespace QLLMChat.ViewModels
                     //else throw error;
                 }
                 IsSending = false;
-                (COMMAND_Send as ActionCommand).OnCanExecuteChanged();
+                DispatcherProvider.GetDispatcher().Invoke(() =>
+                {
+                    (COMMAND_Send as ActionCommand).OnCanExecuteChanged();
+                });
             }, arg =>
             {
                 return !IsSending && CanInput;
@@ -225,7 +232,9 @@ namespace QLLMChat.ViewModels
             var targetId = add.ChatId;
             var target = await this.ChatDataBase.GetChatTargetAsync(targetId);
             var vm = CreateChatTarget(target);
-            ChatTargets.Add(vm);
+            //ChatTargets.Add(vm);
+            ChatTargets.Insert(0,vm);
+
 
             this.SelectedChatTarget = vm;
 
@@ -245,7 +254,7 @@ namespace QLLMChat.ViewModels
             var data = await ChatDataBase.GetChatTargetsAsync();
             DispatcherProvider.GetDispatcher().Invoke(() =>
             {
-                foreach (var i in data)
+                foreach (var i in data.OrderByDescending(d=>d.ChatId))
                 {
                     ChatTargets.Add(new ChatTargetViewModel()
                     {

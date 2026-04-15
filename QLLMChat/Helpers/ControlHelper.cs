@@ -35,9 +35,9 @@ namespace QLLMChat.Helpers
         public static readonly DependencyProperty MouseHoverChangeOpacityTargetProperty =
             DependencyProperty.RegisterAttached("MouseHoverChangeOpacityTarget", typeof(UIElement), typeof(ControlHelper), new PropertyMetadata(null, (prop, change) =>
             {
-                if(prop is not UIElement) throw new("只能附加到UIElement上");
+                if (prop is not UIElement) throw new("只能附加到UIElement上");
 
-                var Element= prop as UIElement;
+                var Element = prop as UIElement;
                 var Target = change.NewValue as UIElement;
                 if (Target != null)
                 {
@@ -83,5 +83,34 @@ namespace QLLMChat.Helpers
 
         }
 
+        public static readonly DependencyProperty ObjectDictionaryProperty = DependencyProperty.RegisterAttached("ObjectDictionary", typeof(Dictionary<string, object>), typeof(ControlHelper), new PropertyMetadata(null));
+        public static void SetObjectDictionary(UIElement Element, Dictionary<string, object> Value)
+        {
+            Element.SetValue(ObjectDictionaryProperty, Value);
+        }
+        public static Dictionary<string, object>? GetObjectDictionary(UIElement Element)
+        {
+            return (Dictionary<string, object>?)Element.GetValue(ObjectDictionaryProperty);
+        }
+        public static void SetObjectToSelfDictionary(this UIElement Element, string Key, object Value)
+        {
+            var dict = GetObjectDictionary(Element);
+            if (dict == null)
+            {
+                dict = new Dictionary<string, object>();
+                SetObjectDictionary(Element, dict);
+            }
+            if(dict.ContainsKey(Key)) dict.Remove(Key);
+            dict[Key] = Value;
+        }
+        public static object? GetObjectInSelfDictionary(this UIElement Element,string Key)
+        {
+            var dict = GetObjectDictionary(Element);
+            if (dict == null)
+            {
+                return null;
+            }
+            return dict.ContainsKey(Key) ? dict[Key] : null;
+        }
     }
 }

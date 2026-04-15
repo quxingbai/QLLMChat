@@ -11,7 +11,7 @@
     <Window.Resources>
     </Window.Resources>
     <Grid>
-        <ContentControl>
+        <!--<ContentControl>
             <ContentControl.Template>
                 <ControlTemplate TargetType="ContentControl">
                     <Border Background="Black">
@@ -27,7 +27,10 @@
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </ContentControl.Template>
-        </ContentControl>
-        <pages:MainChatPage DataContext="{Binding MainChatPageViewModel}"/>
+        </ContentControl>-->
+        <pages:MainChatPage DataContext="{Binding MainChatPageViewModel}" Visibility="Visible"/>
+        <!--<cc:CustomRenderMarkdownViewer Width="500" Height="500" Markdown="## 你好ALSKDJADS" Loaded="WpfElementRenderBox_Loaded" Foreground="Black" Background="WhiteSmoke"/>-->
+        
+
     </Grid>
 </Window>

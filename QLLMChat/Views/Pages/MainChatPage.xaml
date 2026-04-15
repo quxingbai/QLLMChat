@@ -109,7 +109,7 @@
                                     </ScrollViewer>
                                     <Border Grid.Row="1"  VerticalAlignment="Bottom" Background="White" Padding="30,0" HorizontalAlignment="Center" DataContext="{Binding RelativeSource={RelativeSource AncestorType=local:MainChatPage},Path=DataContext}">
                                         <Grid>
-                                            <cc:InputBox Text="{Binding Text,Mode=TwoWay}" IsSending="{Binding IsSending}" Width="850" MinHeight="130" Margin="0,0,0,40" SendCommand="{Binding COMMAND_Send}" CancelCommand="{Binding COMMAND_Cancel}"/>
+                                            <cc:InputBox SendEnd="InputBox_SendEnd" Text="{Binding Text,Mode=TwoWay}" IsSending="{Binding IsSending}" Width="850" MinHeight="130" Margin="0,0,0,40" SendCommand="{Binding COMMAND_Send}" CancelCommand="{Binding COMMAND_Cancel}"/>
                                         </Grid>
                                     </Border>
                                 </Grid>
