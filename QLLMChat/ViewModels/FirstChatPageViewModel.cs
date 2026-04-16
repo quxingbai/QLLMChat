@@ -35,6 +35,16 @@ namespace QLLMChat.ViewModels
                 OnPropertyChange();
             }
         }
+        private ChatRoleDataModel? _SelectedChatRole;
+        public ChatRoleDataModel? SelectedChatRole
+        {
+            get => _SelectedChatRole;
+            set
+            {
+                _SelectedChatRole = value;
+                OnPropertyChange();
+            }
+        }
 
         private ICommand _SendCommand;
         public ICommand SendCommand
@@ -47,7 +57,7 @@ namespace QLLMChat.ViewModels
             }
         }
 
-        private String _Text;
+        private String _Text= "做一个圆角按钮";
         public String Text
         {
             get => _Text;
@@ -62,7 +72,8 @@ namespace QLLMChat.ViewModels
         private IServiceProvider ServiceProvider = null;
         private IChatModel ChatTarget = null;
         public ObservableCollection<ChatTypeItemModel> ChatTypes { get; set; } = new();
-        public FirstChatPageViewModel(IServiceProvider Service,Action<FirstChatPageViewModel> CreateChatPageAction)
+        public ObservableCollection<ChatRoleDataModel> ChatRoles { get; set; } = new();
+        public FirstChatPageViewModel(IServiceProvider Service, Action<FirstChatPageViewModel> CreateChatPageAction)
         {
             this.ServiceProvider = Service;
             this.ChatTarget = Service.GetRequiredService<IChatModel>();
@@ -88,6 +99,12 @@ namespace QLLMChat.ViewModels
                 ChatTypes.Add(item);
             }
             SelectedChatTypeItem = ChatTypes[0];
+            foreach (var i in ChatRoleDataManager.Default.GetRoles())
+            {
+                this.ChatRoles.Add(i);
+            }
+            if (ChatRoles.Count != 0)
+                SelectedChatRole = ChatRoles[0];
             IsLoading = false;
         }
     }

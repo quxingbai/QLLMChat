@@ -129,7 +129,8 @@ namespace QLLMChat.Views.CControls
                     //var a = 1;
                 }
 
-                if (change.Contains('>') || newText.Length < oldText.Length)
+                if (changeWith.Contains("</QLLMRender>") || newText.Length < oldText.Length)
+                //if (change.Contains('>') || newText.Length < oldText.Length)
                 {
                     return self.HandleMarkdownChanged(newText);
                 }
@@ -315,11 +316,16 @@ namespace QLLMChat.Views.CControls
             // 遍历段落寻找 Run 包含占位符
             foreach (var block in doc.Blocks.ToList())
             {
-                if (block is Paragraph para)
+                Run targetRun = null;
+                Inline foundInline = null;
+                Paragraph para = null;
+                List list = null;
+
+                // 也可能占位符渲染在其他 Block 类型中（ListItem 等），这里仅处理 Paragraph。可按需扩展。
+                if (block is Paragraph)
                 {
                     // 找到包含占位符的 Run（可能被拆分为多个 Run，先用 string search）
-                    Run targetRun = null;
-                    Inline foundInline = null;
+                    para = (Paragraph)block;
 
                     foreach (var inline in para.Inlines.ToList())
                     {
@@ -330,145 +336,177 @@ namespace QLLMChat.Views.CControls
                             break;
                         }
                     }
-                    if (targetRun != null)
+                }
+                else if (block is List)
+                {
+                    list = (List)block;
+                    foreach (var itemBlock in list.ListItems)
                     {
-                        // 如果 run.Text 包含其他文本，需要拆分 Run：prefix, placeholder, suffix
-                        var txt = targetRun.Text;
-                        var idx = txt.IndexOf(placeholderText, StringComparison.Ordinal);
-                        var prefix = txt.Substring(0, idx);
-                        var suffix = txt.Substring(idx + placeholderText.Length);
-
-                        // 构造新的运行序列
-                        var beforeRun = string.IsNullOrEmpty(prefix) ? null : new Run(prefix);
-                        var afterRun = string.IsNullOrEmpty(suffix) ? null : new Run(suffix);
-
-                        // 插入 beforeRun (如果有)
-                        if (beforeRun != null)
-                            para.Inlines.InsertBefore(targetRun, beforeRun);
-
-                        // 决定注入 InlineUIContainer 还是 BlockUIContainer：
-                        // - 如果该 Paragraph 中除了占位符没有其他内容(即原 run 是唯一 Inline 或前后都为空)，将其替换为 Block（块级）；
-                        // - 否则以 Inline 形式插入保持行内位置。
-                        var onlyThisInline = (para.Inlines.Count == 1) ||
-                                             (para.Inlines.Count == 2 && beforeRun != null && afterRun == null) ||
-                                             (para.Inlines.Count == 2 && beforeRun == null && afterRun != null) ||
-                                             (para.Inlines.Count == 3 && beforeRun != null && afterRun != null);
-
-                        var element = CreateOrGetElement(item.Content);
-                        CustomRenderCard renderCard = new();
-                        renderCard.CodeLanguage = item.Type;
-                        renderCard.SourceCode = item.Content;
-
-                        if (element != null)
+                        foreach (var block2 in itemBlock.Blocks)
                         {
-                            if (onlyThisInline && string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(suffix))
+                            if (block2 is Paragraph b2)
                             {
-                                renderCard.Content = element;
-                                // 整段替换为块级 UI
-                                var blockContainer = new BlockUIContainer
+                                // 找到包含占位符的 Run（可能被拆分为多个 Run，先用 string search）
+                                foreach (var inline in b2.Inlines.ToList())
                                 {
-                                    Child = renderCard,
-                                    Margin = new Thickness(4)
-                                };
-
-                                // 插入块并移除段落
-                                doc.Blocks.InsertAfter(para, blockContainer);
-                                doc.Blocks.Remove(para);
-
-                                _injectedBlockContainers.Add(blockContainer);
-                            }
-                            else
-                            {
-                                renderCard.Content = element;
-                                // 以 InlineUIContainer 插入到当前段落的位置
-                                var inlineUi = new InlineUIContainer
-                                {
-                                    Child = renderCard,
-                                };
-
-                                para.Inlines.InsertBefore(targetRun, inlineUi);
-                                // 记录以便后续移除
-                                _injectedInlineContainers.Add((para, inlineUi));
-
-                                // 插入 afterRun 并移除原 run
-                                if (afterRun != null)
-                                    para.Inlines.InsertAfter(inlineUi, afterRun);
+                                    if (inline is Run run && run.Text != null && run.Text.Contains(placeholderText))
+                                    {
+                                        targetRun = run;
+                                        foundInline = inline;
+                                        para = b2;
+                                        break;
+                                    }
+                                }
                             }
                         }
-                        else
+                    }
+                }
+
+                if (targetRun != null && block != null)
+                {
+                    // 如果 run.Text 包含其他文本，需要拆分 Run：prefix, placeholder, suffix
+                    var txt = targetRun.Text;
+                    var idx = txt.IndexOf(placeholderText, StringComparison.Ordinal);
+                    var prefix = txt.Substring(0, idx);
+                    var suffix = txt.Substring(idx + placeholderText.Length);
+
+                    // 构造新的运行序列
+                    var beforeRun = string.IsNullOrEmpty(prefix) ? null : new Run(prefix);
+                    var afterRun = string.IsNullOrEmpty(suffix) ? null : new Run(suffix);
+
+                    // 插入 beforeRun (如果有)
+                    if (beforeRun != null)
+                        para.Inlines.InsertBefore(targetRun, beforeRun);
+
+                    // 决定注入 InlineUIContainer 还是 BlockUIContainer：
+                    // - 如果该 Paragraph 中除了占位符没有其他内容(即原 run 是唯一 Inline 或前后都为空)，将其替换为 Block（块级）；
+                    // - 否则以 Inline 形式插入保持行内位置。
+                    var onlyThisInline = (para.Inlines.Count == 1) ||
+                                         (para.Inlines.Count == 2 && beforeRun != null && afterRun == null) ||
+                                         (para.Inlines.Count == 2 && beforeRun == null && afterRun != null) ||
+                                         (para.Inlines.Count == 3 && beforeRun != null && afterRun != null);
+
+                    var element = CreateOrGetElement(item.Content);
+                    CustomRenderCard renderCard = new()
+                    {
+                        MinWidth=250
+
+                    };
+                    renderCard.CodeLanguage = item.Type;
+                    renderCard.SourceCode = item.Content;
+
+                    if (element != null)
+                    {
+                        if (onlyThisInline && string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(suffix))
                         {
-                            // 解析失败，则用文本提示代替
-                            var tb = CreateFallbackTextBlock(item.Content);
-                            renderCard.Content = tb;
+                            renderCard.Content = element;
+                            // 整段替换为块级 UI
                             var blockContainer = new BlockUIContainer
                             {
                                 Child = renderCard,
                                 Margin = new Thickness(4)
                             };
 
+                            // 插入块并移除段落
                             doc.Blocks.InsertAfter(para, blockContainer);
                             doc.Blocks.Remove(para);
+
                             _injectedBlockContainers.Add(blockContainer);
                         }
-                        //if (element != null)
-                        //{
-                        //    if (onlyThisInline && string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(suffix))
-                        //    {
-                        //        // 整段替换为块级 UI
-                        //        var blockContainer = new BlockUIContainer
-                        //        {
-                        //            Child = element,
-                        //            Margin = new Thickness(4)
-                        //        };
+                        else
+                        {
+                            renderCard.Content = element;
+                            // 以 InlineUIContainer 插入到当前段落的位置
+                            var inlineUi = new InlineUIContainer
+                            {
+                                Child = renderCard,
+                            };
 
-                        //        // 插入块并移除段落
-                        //        doc.Blocks.InsertAfter(para, blockContainer);
-                        //        doc.Blocks.Remove(para);
+                            para.Inlines.InsertBefore(targetRun, inlineUi);
+                            // 记录以便后续移除
+                            _injectedInlineContainers.Add((para, inlineUi));
 
-                        //        _injectedBlockContainers.Add(blockContainer);
-                        //    }
-                        //    else
-                        //    {
-                        //        // 以 InlineUIContainer 插入到当前段落的位置
-                        //        var inlineUi = new InlineUIContainer
-                        //        {
-                        //            Child = element,
-                        //        };
-
-                        //        para.Inlines.InsertBefore(targetRun, inlineUi);
-                        //        // 记录以便后续移除
-                        //        _injectedInlineContainers.Add((para, inlineUi));
-
-                        //        // 插入 afterRun 并移除原 run
-                        //        if (afterRun != null)
-                        //            para.Inlines.InsertAfter(inlineUi, afterRun);
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    // 解析失败，则用文本提示代替
-                        //    var tb = CreateFallbackTextBlock(item.Content);
-                        //    var blockContainer = new BlockUIContainer
-                        //    {
-                        //        Child = tb,
-                        //        Margin = new Thickness(4)
-                        //    };
-
-                        //    doc.Blocks.InsertAfter(para, blockContainer);
-                        //    doc.Blocks.Remove(para);
-                        //    _injectedBlockContainers.Add(blockContainer);
-                        //}
-
-                        // 移除原始 targetRun（不论如何都要移除）
-                        para.Inlines.Remove(targetRun);
-
-                        // 如果我们插入了 before/after runs 但 later doc manipulations changed them, it's OK.
-                        // 只注入第一个匹配（防止同段落内重复占位符需要单独逻辑）
-                        // 若段落中可能包含多个相同占位符，可在此继续循环查找；当前实现按占位符逐个处理。
-                        break;
+                            // 插入 afterRun 并移除原 run
+                            if (afterRun != null)
+                                para.Inlines.InsertAfter(inlineUi, afterRun);
+                        }
                     }
+                    else
+                    {
+                        // 解析失败，则用文本提示代替
+                        var tb = CreateFallbackTextBlock(item.Content);
+                        renderCard.Content = tb;
+                        var blockContainer = new BlockUIContainer
+                        {
+                            Child = renderCard,
+                            Margin = new Thickness(4)
+                        };
+
+                        doc.Blocks.InsertAfter(para, blockContainer);
+                        doc.Blocks.Remove(para);
+                        _injectedBlockContainers.Add(blockContainer);
+                    }
+                    //if (element != null)
+                    //{
+                    //    if (onlyThisInline && string.IsNullOrEmpty(prefix) && string.IsNullOrEmpty(suffix))
+                    //    {
+                    //        // 整段替换为块级 UI
+                    //        var blockContainer = new BlockUIContainer
+                    //        {
+                    //            Child = element,
+                    //            Margin = new Thickness(4)
+                    //        };
+
+                    //        // 插入块并移除段落
+                    //        doc.Blocks.InsertAfter(para, blockContainer);
+                    //        doc.Blocks.Remove(para);
+
+                    //        _injectedBlockContainers.Add(blockContainer);
+                    //    }
+                    //    else
+                    //    {
+                    //        // 以 InlineUIContainer 插入到当前段落的位置
+                    //        var inlineUi = new InlineUIContainer
+                    //        {
+                    //            Child = element,
+                    //        };
+
+                    //        para.Inlines.InsertBefore(targetRun, inlineUi);
+                    //        // 记录以便后续移除
+                    //        _injectedInlineContainers.Add((para, inlineUi));
+
+                    //        // 插入 afterRun 并移除原 run
+                    //        if (afterRun != null)
+                    //            para.Inlines.InsertAfter(inlineUi, afterRun);
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    // 解析失败，则用文本提示代替
+                    //    var tb = CreateFallbackTextBlock(item.Content);
+                    //    var blockContainer = new BlockUIContainer
+                    //    {
+                    //        Child = tb,
+                    //        Margin = new Thickness(4)
+                    //    };
+
+                    //    doc.Blocks.InsertAfter(para, blockContainer);
+                    //    doc.Blocks.Remove(para);
+                    //    _injectedBlockContainers.Add(blockContainer);
+                    //}
+
+                    // 移除原始 targetRun（不论如何都要移除）
+                    para.Inlines.Remove(targetRun);
+
+                    // 如果我们插入了 before/after runs 但 later doc manipulations changed them, it's OK.
+                    // 只注入第一个匹配（防止同段落内重复占位符需要单独逻辑）
+                    // 若段落中可能包含多个相同占位符，可在此继续循环查找；当前实现按占位符逐个处理。
+                    break;
                 }
-                // 也可能占位符渲染在其他 Block 类型中（ListItem 等），这里仅处理 Paragraph。可按需扩展。
+                else if (block is List)
+                {
+
+                }
             }
         }
 
@@ -630,10 +668,11 @@ namespace QLLMChat.Views.CControls
                         return single;
                     }
 
-                    var container = new StackPanel();
-                    foreach (UIElement child in wrappedPanel.Children)
-                        container.Children.Add(child);
-                    return container;
+                    //var container = new StackPanel();
+                    //foreach (UIElement child in wrappedPanel.Children)
+                    //    container.Children.Add(child);
+                    //return container;
+                    return wrappedObj as StackPanel;
                 }
             }
             catch (Exception er)

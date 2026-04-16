@@ -59,7 +59,10 @@
                             <Border Grid.Column="1" Name="BD_SizeData">
                                 <Border HorizontalAlignment="Right"  Background="#EEF3FE" Padding="15,10" CornerRadius="5">
                                     <!--<ContentPresenter Content="{Binding Message}" MaxWidth="300"/>-->
-                                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" MaxWidth="500"/>
+                                    <!--<TextBlock Text="{Binding Message}" TextWrapping="Wrap" MaxWidth="500"/>-->
+                                    <TextBox MaxWidth="500" Text="{Binding Message}" Background="Transparent" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True">
+                                        
+                                    </TextBox>
                                 </Border>
                             </Border>
                         </Grid>

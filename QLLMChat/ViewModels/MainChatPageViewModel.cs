@@ -29,7 +29,7 @@ namespace QLLMChat.ViewModels
         private Dictionary<ChatTargetViewModel, ChatPageViewModel> ChatPages = new();
         private bool CanInput = true;
         public ObservableCollection<ChatTargetViewModel> ChatTargets { get; set; } = new();
-        public Lazy<IEnumerable<ChatTypeItemModel>> ChatTypeItems { get; set; }
+        //public Lazy<IEnumerable<ChatTypeItemModel>> ChatTypeItems { get; set; }
 
         private ChatTypeItemModel _SelectedChatType = null;
         public ChatTypeItemModel SelectedChatType
@@ -41,7 +41,7 @@ namespace QLLMChat.ViewModels
             }
         }
 
-        private String _Text { get; set; }
+        private String _Text { get; set; } 
         public String Text
         {
             get => _Text;
@@ -113,7 +113,7 @@ namespace QLLMChat.ViewModels
                     var page = ChatPageContent as ChatPageViewModel;
                     bool isFirstMessage = page.Messages.Count == 0, isChangedAutoTitle = false;
 
-                    string text = arg.ToString();
+                    string text = arg?.ToString()??"";
 
                     var selfMessage = new ChatTargetMessageModel()
                     {
@@ -129,7 +129,8 @@ namespace QLLMChat.ViewModels
                     {
                         Messages = context,
                         SendContent = text,
-                        CustomChatType = nowChatTarget.ChatType
+                        CustomChatType = nowChatTarget.ChatType,
+                        SystemMessage=nowChatTarget.ChatRole?.MainRoleContent??string.Empty
                     };
                     if (isFirstMessage)
                     {
@@ -148,12 +149,12 @@ namespace QLLMChat.ViewModels
                                     if (!isChangedAutoTitle)
                                     {
                                         isChangedAutoTitle = true;
-                                        nowChatTarget.Title = "";
+                                        nowChatTarget.Title = new string(text.Take(30).ToArray());
                                     }
-                                    if (nowChatTarget.Title.ToString().Length < 30)
-                                    {
-                                        nowChatTarget.Title += (response.Message.Trim());
-                                    }
+                                    //if (nowChatTarget.Title.ToString().Length < 30)
+                                    //{
+                                    //    nowChatTarget.Title += (response.Message.Trim());
+                                    //}
                                     else
                                     {
                                         isFirstMessage = false;
@@ -167,7 +168,8 @@ namespace QLLMChat.ViewModels
                     {
                         ChatId = nowChatTarget.ChatId,
                         ChatTargetType = nowChatTarget.ChatType,
-                        ChattName = nowChatTarget.Title
+                        ChattName = nowChatTarget.Title,
+                        ChatRoleName=nowChatTarget.ChatRole?.Name??""
                     }).ConfigureAwait(true);
 
                     var response = vmMessage.Complet();
@@ -260,7 +262,8 @@ namespace QLLMChat.ViewModels
                     {
                         Title = i.ChattName,
                         ChatId = i.ChatId,
-                        ChatType=i.ChatTargetType
+                        ChatType=i.ChatTargetType,
+                        ChatRole= ChatRoleDataManager.Default.GetRole(i.ChatRoleName)
                     });
                 }
             });
@@ -288,7 +291,9 @@ namespace QLLMChat.ViewModels
             needInit = Page == null ? false : Page.Messages.Count == 0;
             ChatPageContent = Page == null ? new FirstChatPageViewModel(this.ServiceProvider, create =>
             {
+                //首次发消息选择类型后在这里创建
                 ChatTarget.ChatType = create.SelectedChatTypeItem;
+                ChatTarget.ChatRole = create.SelectedChatRole;
                 ChatPageViewModel chatPageVm = new();
                 ChatPages.Add(ChatTarget, chatPageVm);
                 SelectedChatTargetChanged(ChatTarget);
@@ -296,7 +301,8 @@ namespace QLLMChat.ViewModels
                 {
                     ChatId=ChatTarget.ChatId,
                     ChatTargetType=ChatTarget.ChatType,
-                    ChattName=ChatTarget.Title.ToString()
+                    ChattName=ChatTarget.Title.ToString(),
+                    ChatRoleName=ChatTarget.ChatRole.Name
                 }); ;
 
 

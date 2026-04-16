@@ -11,5 +11,6 @@ namespace QLLMChat.Models.Entities
         public string SendContent { get; set; }
         public IEnumerable<ChatTargetMessageModel> Messages { get; set; }
         public ChatTypeItemModel CustomChatType {  get; set; }
+        public String SystemMessage { get; set; }= String.Empty;
     }
 }

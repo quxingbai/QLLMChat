@@ -25,7 +25,6 @@ namespace QLLMChat
         {
             InitializeComponent();
             this.DataContext = ViewModel;
-            Task.Delay(1000).Wait();
         }
 
         //private void WpfElementRenderBox_Loaded(object sender, RoutedEventArgs e)

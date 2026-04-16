@@ -11,5 +11,6 @@ namespace QLLMChat.Models.Entities
         public String ChattName { get; set; }
         public int ChatId { get; set; }
         public ChatTypeItemModel ChatTargetType { get; set; } 
+        public String ChatRoleName { get; set; }
     }
 }

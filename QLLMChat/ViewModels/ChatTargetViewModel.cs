@@ -1,4 +1,5 @@
-﻿using QLLMChat.Models.Entities;
+﻿using QLLMChat.Helpers;
+using QLLMChat.Models.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace QLLMChat.ViewModels
 {
-    public class ChatTargetViewModel:ViewModelBase
+    public class ChatTargetViewModel : ViewModelBase
     {
         private string _Title;
         public string Title
@@ -42,6 +43,15 @@ namespace QLLMChat.ViewModels
             get => _ChatType; set
             {
                 _ChatType = value;
+                OnPropertyChange();
+            }
+        }
+        private ChatRoleDataModel? _ChatRole;
+        public ChatRoleDataModel? ChatRole
+        {
+            get => _ChatRole; set
+            {
+                _ChatRole = value;
                 OnPropertyChange();
             }
         }

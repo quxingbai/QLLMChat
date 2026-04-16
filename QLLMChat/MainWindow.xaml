@@ -28,9 +28,9 @@
                 </ControlTemplate>
             </ContentControl.Template>
         </ContentControl>-->
+        <!--<Path Fill="none"-->
         <pages:MainChatPage DataContext="{Binding MainChatPageViewModel}" Visibility="Visible"/>
         <!--<cc:CustomRenderMarkdownViewer Width="500" Height="500" Markdown="## 你好ALSKDJADS" Loaded="WpfElementRenderBox_Loaded" Foreground="Black" Background="WhiteSmoke"/>-->
-        
-
+       
     </Grid>
 </Window>
