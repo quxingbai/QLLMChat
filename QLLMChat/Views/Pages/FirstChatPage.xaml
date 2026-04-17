@@ -19,7 +19,7 @@
                 <Border Background="Transparent" CornerRadius="5" Margin="5">
                     <Border Grid.Column="1">
                         <WrapPanel HorizontalAlignment="Right">
-                            <ComboBox ToolTip="选择身份"  ItemsSource="{Binding ChatRoles}" SelectedItem="{Binding SelectedChatRole}" FontSize="10"  MinWidth="100" Margin="0,0,5,0">
+                            <ComboBox ToolTip="选择提示词"  ItemsSource="{Binding ChatRoles}" SelectedItem="{Binding SelectedChatRole}" FontSize="10"  MinWidth="100" Margin="0,0,5,0">
                                 <ComboBox.Resources>
                                     <DataTemplate DataType="{x:Type md:ChatRoleDataModel}">
                                         <Border>

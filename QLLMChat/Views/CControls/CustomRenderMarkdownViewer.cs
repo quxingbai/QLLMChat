@@ -386,7 +386,7 @@ namespace QLLMChat.Views.CControls
                                          (para.Inlines.Count == 2 && beforeRun == null && afterRun != null) ||
                                          (para.Inlines.Count == 3 && beforeRun != null && afterRun != null);
 
-                    var element = CreateOrGetElement(item.Content);
+                    var element = CreateOrGetElement(item);
                     CustomRenderCard renderCard = new()
                     {
                         MinWidth=250
@@ -538,8 +538,10 @@ namespace QLLMChat.Views.CControls
         }
 
         // 创建或从缓存中拿到用于注入的 UIElement（若缓存中已有原型且未被挂载则直接复用；若已被挂载则尝试克隆）
-        private UIElement? CreateOrGetElement(string fragment)
+        private UIElement? CreateOrGetElement(RenderItem item)
         {
+            string fragment = item.Content;
+            string type = item.Type;
             if (string.IsNullOrWhiteSpace(fragment))
                 return null;
 
@@ -572,16 +574,34 @@ namespace QLLMChat.Views.CControls
             }
 
             // 缓存中不存在或克隆失败：尝试把 fragment 解析为 UIElement
-            var parsed = TryParseXamlFragment(fragment, out var parsedError);
-            if (parsedError != null)
-            {
+            //var parsed = TryParseXamlFragment(fragment, out var parsedError);
+            //if (parsedError != null)
+            //{
 
-            }
-            if (parsed != null)
+            //}
+            //if (parsed != null)
+            //{
+            //    // 将第一个解析出的实例作为缓存原型（后续复用/克隆基准）
+            //    AddToCache(key, parsed);
+            //    return parsed;
+            //}
+
+            try
             {
-                // 将第一个解析出的实例作为缓存原型（后续复用/克隆基准）
+                var parsed=ParseRenderItemToElement(item);
                 AddToCache(key, parsed);
                 return parsed;
+            }
+            catch (Exception error)
+            {
+                TextBox ErrorTextBlock = new();
+                ErrorTextBlock.BorderThickness = new(0);
+                ErrorTextBlock.Foreground = Brushes.Red;
+                ErrorTextBlock.Text = error.Message;
+                ErrorTextBlock.TextWrapping = TextWrapping.Wrap;
+
+                AddToCache(key, ErrorTextBlock);
+                return ErrorTextBlock;
             }
 
             return null;
@@ -689,6 +709,94 @@ namespace QLLMChat.Views.CControls
             }
 
             return null;
+        }
+        private UIElement ParseXamlFragment(string fragment)
+        {
+            if (string.IsNullOrWhiteSpace(fragment))
+                throw new ArgumentNullException("转换参数不能为空");
+
+            try
+            {
+                // 检查是否包含 presentation 命名空间声明
+                var hasPresentationNs = Regex.IsMatch(fragment, @"http://schemas\.microsoft\.com/winfx/2006/xaml/presentation", RegexOptions.IgnoreCase);
+
+                // 如果包含命名空间，尝试直接解析
+                if (hasPresentationNs)
+                {
+                    try
+                    {
+                        var obj = XamlReader.Parse(fragment);
+                        if (obj is UIElement ui) return ui;
+                        if (obj is Panel panel)
+                        {
+                            var container = new StackPanel();
+                            foreach (UIElement child in panel.Children)
+                                container.Children.Add(child);
+                            return container;
+                        }
+                    }
+                    catch
+                    {
+                        // 继续尝试包装解析
+                    }
+                }
+
+                // 包装片段，确保默认命名空间和 x 命名空间存在（允许简写元素如 Button）
+                var wrapper =
+                    "<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                    "xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>" +
+                    fragment +
+                    "</StackPanel>";
+
+                var wrappedObj = XamlReader.Parse(wrapper);
+                if (wrappedObj is Panel wrappedPanel)
+                {
+                    if (wrappedPanel.Children.Count == 1 && wrappedPanel.Children[0] is UIElement single)
+                    {
+                        wrappedPanel.Children.RemoveAt(0);
+                        return single;
+                    }
+
+                    //var container = new StackPanel();
+                    //foreach (UIElement child in wrappedPanel.Children)
+                    //    container.Children.Add(child);
+                    //return container;
+                    return wrappedObj as StackPanel;
+                }
+            }
+            catch (Exception er)
+            {
+                throw er;
+            }
+
+            throw new NotImplementedException("转换为 UIElement 失败");
+        }
+
+        private UIElement ParseRenderItemToElement(RenderItem Item)
+        {
+            if (string.IsNullOrWhiteSpace(Item.Content))
+                throw new ArgumentNullException("参数 Content 不能为空");
+            if (Item.Type == "WPF")
+            {
+                return ParseXamlFragment(Item.Content);
+            }
+            else
+            {
+
+                return new Border()
+                {
+                    Padding = new Thickness(10),
+                    CornerRadius = new CornerRadius(5),
+                    Child = new TextBlock()
+                    {
+                        Text = "不支持的渲染类型：" + Item.Type,
+                        TextWrapping = TextWrapping.Wrap,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Foreground = Brushes.Red
+                    }
+                };
+            }
         }
 
         private TextBlock CreateFallbackTextBlock(string text)

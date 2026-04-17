@@ -20,6 +20,7 @@ namespace QLLMChat.Helpers
         public ChatRoleDataManager(string DirectoryPath = "./Roles")
         {
             this.BaseDirectory = DirectoryPath;
+            Directory.CreateDirectory(this.BaseDirectory);
         }
         public ChatRoleDataModel? GetRole(string Name)
         {

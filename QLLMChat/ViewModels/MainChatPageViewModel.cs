@@ -280,7 +280,8 @@ namespace QLLMChat.ViewModels
             }
             else
             {
-                var dt= this.ChatDataBase.GetChatTargetMessagesAsync(ChatTarget.ChatId).Result;
+                var dtt= this.ChatDataBase.GetChatTargetMessagesAsync(ChatTarget.ChatId);
+                var dt = dtt.Result;
                 if (dt.Any())
                 {
                     Page=new ChatPageViewModel();

@@ -22,11 +22,15 @@ namespace QLLMChat
         protected override void OnStartup(StartupEventArgs e)
         {
             var service = new ServiceCollection();
-
-            service.AddSingleton<IChatDataBase, JsonDatabase>(p =>
+            //这里是数据库的注入，可以根据需要替换成其他数据库实现
+            //比如目前除了Json还有一个内存数据库MemoryDatabase，后续也可以添加其他数据库实现
+            service.AddSingleton<IChatDataBase, QBlockDataDatabase>(p =>
             {
-                return new JsonDatabase("./chatdata.json");
+                //return new JsonDatabase("./chatdata.json");
+                return new QBlockDataDatabase("./Database/chatdata.qdb",50);
             });
+            //这里是聊天模型的注入，可以根据需要替换成其他聊天模型实现，实现了IMultiChatTypes接口的聊天模型会在界面上显示不同的模型，
+            // public class OllamaChat : IChatModel, IMultiChatTypes
             service.AddSingleton<IChatModel, OllamaChat>();
             service.AddSingleton<IDispatcherProvider, AppDispatcher>();
             service.AddTransient<MainWindowViewModel>();

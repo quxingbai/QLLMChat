@@ -57,7 +57,7 @@ namespace QLLMChat.ViewModels
             }
         }
 
-        private String _Text= "做一个圆角按钮";
+        private String _Text;
         public String Text
         {
             get => _Text;

@@ -70,7 +70,7 @@ namespace QLLMChat.DataBases
                 Messages = kv.Value
             });
         }
-        public override async Task<ChatTargetModel> AddChatTargetAsync(ChatTargetModel Target)
+        public override async Task<ChatTargetModel?> AddChatTargetAsync(ChatTargetModel Target)
         {
             var r= await base.AddChatTargetAsync(Target);
             await Save();

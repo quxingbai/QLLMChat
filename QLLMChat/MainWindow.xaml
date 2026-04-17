@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:QLLMChat"
         xmlns:pages="clr-namespace:QLLMChat.Views.Pages"
         mc:Ignorable="d"
+        xmlns:md="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
         xmlns:cc="clr-namespace:QLLMChat.Views.CControls"
         Title="本地推理模型对话" Height="930" Width="1600">
     <Window.Resources>
@@ -31,6 +32,5 @@
         <!--<Path Fill="none"-->
         <pages:MainChatPage DataContext="{Binding MainChatPageViewModel}" Visibility="Visible"/>
         <!--<cc:CustomRenderMarkdownViewer Width="500" Height="500" Markdown="## 你好ALSKDJADS" Loaded="WpfElementRenderBox_Loaded" Foreground="Black" Background="WhiteSmoke"/>-->
-       
     </Grid>
 </Window>
